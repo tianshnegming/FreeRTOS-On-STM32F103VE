@@ -84,7 +84,7 @@ void my_Task_Printf(void * pvParameters)
 		for(unsigned int i = 0;i<=20;i++)
 		{
 			printf("this is the task 3 printf");
-			vTaskDelay(200);
+			vTaskDelay(200);//2
 		}
 	}
 }
