@@ -72,7 +72,7 @@ void my_Task_LED4(void * pvParameters){
 	while(1){
 		HAL_GPIO_TogglePin(GPIOD, LED4_Pin);
 		printf("Hello World 2 \n"); 
-//		vTaskDelay(1200);
+//		vTaskDelay(1200);//
 	}
 }
 
