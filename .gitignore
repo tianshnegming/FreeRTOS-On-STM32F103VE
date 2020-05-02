@@ -25,6 +25,7 @@ documentation/html
 *.lib
 *.a
 *.i
+
 *.d
 tools/kconfig-frontends/kconfig-mconf
 cconfig.h
@@ -36,3 +37,9 @@ ncscope.*
 
 #ctag files
 tags
+
+
+
+*.lst
+*.crf
+*.htm
