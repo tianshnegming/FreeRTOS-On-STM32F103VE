@@ -47,7 +47,7 @@
 /* USER CODE BEGIN PM */
 
 	xQueueHandle xQueue;
-	TaskHandle_t TaskAboutPrintf;
+	TaskHandle_t WillBeDelite;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -67,15 +67,12 @@ void my_Task_LED3(void * pvParameters){
 	while(1){
 		HAL_GPIO_TogglePin(GPIOD, LED3_Pin);
 		printf("I am alive 100 \r\n"); 
-//		taskYIELD();
 		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
 		if( xStatus != pdPASS )
 		{
 				/* 发送操作由于队列满而无法完成 – 这必然存在错误，因为本例中的队列不可能满。 */
 				printf( "ERROR   Could not send to the queue.\r\n" );
 		}
-		
-		
 		vTaskDelay(200);
 	}
 }
@@ -87,16 +84,14 @@ void my_Task_LED4(void * pvParameters){
 	while(1){
 		HAL_GPIO_TogglePin(GPIOD, LED4_Pin);
 		printf("I am alive 200 \r\n"); 
-//		taskYIELD();
 		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
 		if( xStatus != pdPASS )
 		{
 				/* 发送操作由于队列满而无法完成 – 这必然存在错误，因为本例中的队列不可能满。 */
 				printf( "ERROR   Could not send to the queue.\r\n" );
 		}
-		
-		
 		vTaskDelay(1000);
+		vTaskDelete( NULL );
 	}
 }
 
@@ -104,11 +99,11 @@ void my_Task_LED4(void * pvParameters){
 
 static void vReceiverTask( void *pvParameters )
 {
-/* 声明变量，用于保存从队列中接收到的数据。 */
-long lReceivedValue;
-portBASE_TYPE xStatus;
-const portTickType xTicksToWait = 100 / portTICK_RATE_MS;
-/* 本任务依然处于死循环中。 */
+	/* 声明变量，用于保存从队列中接收到的数据。 */
+	long lReceivedValue;
+	portBASE_TYPE xStatus;
+	const portTickType xTicksToWait = 100 / portTICK_RATE_MS;
+	/* 本任务依然处于死循环中。 */
 	for( ;; )
 	{
 		/* 此调用会发现队列一直为空，因为本任务将立即删除刚写入队列的数据单元。 */
@@ -185,27 +180,22 @@ int main(void)
 
 	/* 创建的队列用于保存最多5个值，每个数据单元都有足够的空间来存储一个long型变量 */
 	xQueue = xQueueCreate( 5, sizeof( long ) );
-		if( xQueue != NULL )
-		{
-				/* 创建两个写队列任务实例，任务入口参数用于传递发送到队列的值。所以一个实例不停地往队列发送
-				100，而另一个任务实例不停地往队列发送200。两个任务的优先级都设为1。 */
-				xTaskCreate( my_Task_LED3, "Sender1", 1000, ( void * ) 100, 1, NULL );
-				xTaskCreate( my_Task_LED4, "Sender1", 1000, ( void * ) 200, 1, NULL );
-				/* 创建一个读队列任务实例。其优先级设为2，高于写任务优先级 */
-				xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, 2, NULL );
-				/* 启动调度器，任务开始执行 */
-				vTaskStartScheduler();
-		}
-		else
-		{
-				/* 队列创建失败*/
-				while(1);
-		}
-
-
-		xTaskCreate(my_Task_LED3, (const char *)"LED3", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-		vTaskStartScheduler();
-		
+	if( xQueue != NULL )
+	{
+			/* 创建两个写队列任务实例，任务入口参数用于传递发送到队列的值。所以一个实例不停地往队列发送
+			100，而另一个任务实例不停地往队列发送200。两个任务的优先级都设为1。 */
+			xTaskCreate( my_Task_LED3, "Sender1", 1000, ( void * ) 100, 1, &WillBeDelite );
+			xTaskCreate( my_Task_LED4, "Sender1", 1000, ( void * ) 200, 1, NULL );
+			/* 创建一个读队列任务实例。其优先级设为2，高于写任务优先级 */
+			xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, 2, NULL );
+			/* 启动调度器，任务开始执行 */
+			vTaskStartScheduler();
+	}
+	else
+	{
+			/* 队列创建失败*/
+			while(1);
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */

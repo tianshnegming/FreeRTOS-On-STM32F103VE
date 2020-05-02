@@ -43,3 +43,7 @@ tags
 *.lst
 *.crf
 *.htm
+
+MDK-ARM/FreeRTOS_2/*.lst
+MDK-ARM/FreeRTOS_2/*.crf
+MDK-ARM/FreeRTOS_2/*.htm
