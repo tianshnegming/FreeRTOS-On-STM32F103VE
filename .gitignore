@@ -1,3 +1,9 @@
+
+*.lst
+*.crf
+*.htm
+*.win
+
 *.pyc
 *.map
 *.dblite
@@ -44,6 +50,6 @@ tags
 *.crf
 *.htm
 
-MDK-ARM/FreeRTOS_2/*.lst
-MDK-ARM/FreeRTOS_2/*.crf
-MDK-ARM/FreeRTOS_2/*.htm
+/MDK-ARM/FreeRTOS_2/*.lst
+/MDK-ARM/FreeRTOS_2/*.crf
+/MDK-ARM/FreeRTOS_2/*.htm

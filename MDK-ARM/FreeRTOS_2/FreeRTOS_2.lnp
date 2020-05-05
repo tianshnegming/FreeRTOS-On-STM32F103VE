@@ -8,7 +8,7 @@
 "freertos_2\stm32f1xx_hal_gpio_ex.o"
 "freertos_2\stm32f1xx_hal_tim.o"
 "freertos_2\stm32f1xx_hal_tim_ex.o"
-"freertos_2\stm32f1xx_hal_usart.o"
+"freertos_2\stm32f1xx_hal_uart.o"
 "freertos_2\stm32f1xx_hal.o"
 "freertos_2\stm32f1xx_hal_rcc.o"
 "freertos_2\stm32f1xx_hal_rcc_ex.o"

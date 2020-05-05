@@ -56,8 +56,8 @@
 
 int fputc(int ch,FILE *f)
 {
-	 while(!(USART3->SR & (1<<7)));
-	 USART3->DR = ch;
+	 while(!(USART2->SR & (1<<7)));
+	 USART2->DR = ch;
 	 return ch;
 }
 
@@ -67,13 +67,13 @@ void my_Task_LED3(void * pvParameters){
 	while(1){
 		HAL_GPIO_TogglePin(GPIOD, LED3_Pin);
 		printf("I am alive 100 \r\n"); 
-		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
-		if( xStatus != pdPASS )
+//		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
+//		if( xStatus != pdPASS )
 		{
 				/* 发送操作由于队列满而无法完成 – 这必然存在错误，因为本例中的队列不可能满。 */
-				printf( "ERROR   Could not send to the queue.\r\n" );
+//				printf( "ERROR   Could not send to the queue.\r\n" );
 		}
-		vTaskDelay(200);
+		vTaskDelay(5000);
 	}
 }
 
@@ -95,6 +95,20 @@ void my_Task_LED4(void * pvParameters){
 	}
 }
 
+void my_Task_uartReceive(void * pvParameters){
+	long lValueToSend = (long)pvParameters;
+	portBASE_TYPE xStatus;
+	while(1){
+		
+		HAL_GPIO_TogglePin(GPIOD, LED4_Pin);
+		xStatus = xQueueSendToBack( xQueue, &lValueToSend, 0 );
+		if( xStatus != pdPASS )
+		{
+				/* 发送操作由于队列满而无法完成 – 这必然存在错误，因为本例中的队列不可能满。 */
+				printf( "ERROR  uartReceive Could not send to the queue.\r\n" );
+		}
+	}
+}
 
 
 static void vReceiverTask( void *pvParameters )
@@ -107,9 +121,9 @@ static void vReceiverTask( void *pvParameters )
 	for( ;; )
 	{
 		/* 此调用会发现队列一直为空，因为本任务将立即删除刚写入队列的数据单元。 */
-		if( uxQueueMessagesWaiting( xQueue ) != 0 )
+//		if( uxQueueMessagesWaiting( xQueue ) != 0 )
 		{
-			printf( "Queue should have been empty!\r\n" );
+//			printf( "Queue should have been empty!\r\n" );
 		}
 		/* 从队列中接收数据
 		第一个参数是被读取的队列。队列在调度器启动之前就被创建了，所以先于此任务执行。
@@ -145,6 +159,8 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+extern uint8_t receiveDate;
 /* USER CODE END 0 */
 
 /**
@@ -175,9 +191,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_Init();
+  MX_USART3_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+	HAL_UART_Receive_IT(&huart2,&receiveDate,1);
+	HAL_UART_Receive_IT(&huart3,&receiveDate,1);
 	/* 创建的队列用于保存最多5个值，每个数据单元都有足够的空间来存储一个long型变量 */
 	xQueue = xQueueCreate( 5, sizeof( long ) );
 	if( xQueue != NULL )
@@ -185,7 +203,7 @@ int main(void)
 			/* 创建两个写队列任务实例，任务入口参数用于传递发送到队列的值。所以一个实例不停地往队列发送
 			100，而另一个任务实例不停地往队列发送200。两个任务的优先级都设为1。 */
 			xTaskCreate( my_Task_LED3, "Sender1", 1000, ( void * ) 100, 1, &WillBeDelite );
-			xTaskCreate( my_Task_LED4, "Sender1", 1000, ( void * ) 200, 1, NULL );
+//			xTaskCreate( my_Task_LED4, "Sender1", 1000, ( void * ) 200, 1, NULL );
 			/* 创建一个读队列任务实例。其优先级设为2，高于写任务优先级 */
 			xTaskCreate( vReceiverTask, "Receiver", 1000, NULL, 2, NULL );
 			/* 启动调度器，任务开始执行 */
@@ -222,12 +240,13 @@ void SystemClock_Config(void)
 
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV2;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
